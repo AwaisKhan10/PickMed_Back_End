@@ -46,7 +46,9 @@ app.get('/', (req,res)=>{
 ///
 
 const authRoute = require(`./route/auth`);
+const medicineRoute = require(`./route/medicine`);
 app.use(authRoute);
+app.use(medicineRoute);
 
 
 

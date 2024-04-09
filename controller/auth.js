@@ -88,7 +88,7 @@ exports.getAllUsers = async (req,res)=>{
 exports.getbyUserId = async (req,res)=>{
     try {
 
-        const id = req.params.id;
+        const id = req.user_id;
         console.log(id);
         const user = await User.findById(id);
         console.log(user);
@@ -106,6 +106,84 @@ res.send({
         
     } catch (error) {
         console.log('User id',error);
+        res.status(500).json({ success: false, message: 'Internal server error'});
+    }
+}
+
+
+exports.postAdminSignIn = async(req,res)=>{
+try {
+
+
+    const emails = 'awais.sf10@gmail.com';
+    const passwords = '123456789';
+    // Find by Users
+    const {email,password} = req.body;
+
+    const userData = User({
+        emails: emails,
+        passwords: passwords,
+    });
+
+       // Check if user exists
+       if (email == emails && password == passwords) {
+        let token = jwt.sign({ email: email }, "JWT_SECRET", {
+          expiresIn: 86400, // 24 hours
+        });
+        
+        const admin = userData.save();
+      res.status(200).json({ success: true, message: "Logged in successfully", user: userData, token });
+
+      }else{
+        return  res.send({
+            message: "Email And Password is InCorrect !!"
+          })
+      }
+
+     
+
+    
+} catch (error) {
+    console.log('postAdminSigIn', error);
+    res.status(500).json({ success: false, message: 'Internal server error'});
+}
+}
+
+exports.postSignIn = async (req,res)=>{
+    try {
+        const email = req.body.email;
+        const password = req.body.password;
+
+        const userdata = await User.findOne({email: email});
+
+        if(!userdata){
+            return res.send({
+                success: false,
+                message: 'Email not find !!'
+            });
+        }
+
+        const comparePassword =  await bcryptjs.compare(password,userdata.password);
+        if(!comparePassword){
+            return res.send({
+                success: false,
+                message: "Password is incorrect!!",
+            })
+        }
+
+            let token = jwt.sign({id: userdata._id}, "JWT_SECRET", {
+                expiresIn: 86400, // 24 hours
+              });
+
+            res.send({
+                success: true,
+                message: 'user login sucessfully!!',
+                userdata: userdata,
+                token: token
+            });        
+
+    } catch (error) {
+        console.log('Sign In Error', error);
         res.status(500).json({ success: false, message: 'Internal server error'});
     }
 }
