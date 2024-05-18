@@ -88,7 +88,7 @@ exports.getAllUsers = async (req,res)=>{
 exports.getbyUserId = async (req,res)=>{
     try {
 
-        const id = req.user_id;
+        const id = req.params.id;
         console.log(id);
         const user = await User.findById(id);
         console.log(user);
@@ -187,3 +187,30 @@ exports.postSignIn = async (req,res)=>{
         res.status(500).json({ success: false, message: 'Internal server error'});
     }
 }
+
+
+
+exports.updateUser = async (req, res) => {
+    try {
+        const userId = req.params.id; // Assuming you have userId from the token middleware
+        const { email, fullname, address, phoneno } = req.body;
+
+        const updateData = {};
+
+        if (email) updateData.email = email;
+        if (fullname) updateData.fullname = fullname;
+        if (address) updateData.address = address;
+        if (phoneno) updateData.phoneno = phoneno;
+
+        const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true });
+
+        res.send({
+            success: true,
+            message: "User profile updated successfully!",
+            userData: updatedUser
+        });
+    } catch (error) {
+        console.error('Update User error:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
